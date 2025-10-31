@@ -43,8 +43,11 @@
 
             <footer class="scoreboard__period"></footer>
         </div>
-        <script>
-            let data = JSON.parse(localStorage.getItem("scoreboardData")) || {
+        <script type="module">
+            import { dataRef } from "./firebase.js";
+            import { onValue } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+
+            let data = {
                 team1: "",
                 team2: "",
                 score1: 0,
@@ -60,7 +63,6 @@
             };
             let stopwatchInterval = null;
 
-
             function formatTime(millis) {
                 const totalSeconds = Math.floor(millis / 1000);
                 const minutes = Math.floor(totalSeconds / 60)
@@ -72,21 +74,31 @@
 
             function calculateElapsed() {
                 if (!data.isRunning) return data.elapsedMillis;
-                return data.elapsedMillis + (Date.now() - data.lastUpdateTimestamp);
+                return (
+                    data.elapsedMillis + (Date.now() - data.lastUpdateTimestamp)
+                );
             }
 
             function renderRedCard(team1RedCard, team2RedCard) {
-                document.getElementById('red-card-team-1').innerHTML =
-                    '<span class="scoreboard_card red-card">&nbsp</span>'.repeat(team1RedCard);
-                document.getElementById('red-card-team-2').innerHTML =
-                    '<span class="scoreboard_card red-card">&nbsp</span>'.repeat(team2RedCard);
+                document.getElementById("red-card-team-1").innerHTML =
+                    '<span class="scoreboard_card red-card">&nbsp</span>'.repeat(
+                        team1RedCard
+                    );
+                document.getElementById("red-card-team-2").innerHTML =
+                    '<span class="scoreboard_card red-card">&nbsp</span>'.repeat(
+                        team2RedCard
+                    );
             }
 
             function renderYellowCard(team1YellowCard, team2YellowCard) {
-                document.getElementById('yellow-card-team-1').innerHTML =
-                    '<span class="scoreboard_card yellow-card">&nbsp</span>'.repeat(team1YellowCard);
-                document.getElementById('yellow-card-team-2').innerHTML =
-                    '<span class="scoreboard_card yellow-card">&nbsp</span>'.repeat(team2YellowCard);
+                document.getElementById("yellow-card-team-1").innerHTML =
+                    '<span class="scoreboard_card yellow-card">&nbsp</span>'.repeat(
+                        team1YellowCard
+                    );
+                document.getElementById("yellow-card-team-2").innerHTML =
+                    '<span class="scoreboard_card yellow-card">&nbsp</span>'.repeat(
+                        team2YellowCard
+                    );
             }
 
             function updateStopwatchUI() {
@@ -105,8 +117,8 @@
                     data.score2;
                 document.querySelector(".scoreboard__period").textContent =
                     data.period;
-                    renderRedCard(data.redCard1, data.redCard2);
-                    renderYellowCard(data.yellowCard1, data.yellowCard2);
+                renderRedCard(data.redCard1, data.redCard2);
+                renderYellowCard(data.yellowCard1, data.yellowCard2);
                 updateStopwatchUI();
 
                 clearInterval(stopwatchInterval);
@@ -119,11 +131,10 @@
 
             updateUI();
 
-            window.addEventListener("storage", (event) => {
-                if (event.key === "scoreboardData") {
-                    data = JSON.parse(event.newValue) || data;
-                    updateUI();
-                }
+            onValue(dataRef, (snapshot) => {
+                data = snapshot.val() || data;
+                console.log("Data updated from Firebase:", data);
+                updateUI();
             });
         </script>
     </body>

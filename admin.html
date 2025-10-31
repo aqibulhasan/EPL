@@ -152,21 +152,37 @@
             <button id="updateBtn">Update Scoreboard (Manual)</button>
         </div>
 
-        <script>
+        <script type="module">
+            import { dataRef } from "./firebase.js";
+            import {
+                update,
+                onValue,
+            } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+
             let stopwatchInterval = null;
-            let data = JSON.parse(localStorage.getItem("scoreboardData")) || {
+            let data = {
                 team1: "",
                 team2: "",
                 score1: 0,
                 score2: 0,
                 period: "",
                 elapsedMillis: 0,
+                yellowCard1: 0,
+                yellowCard2: 0,
+                redCard1: 0,
+                redCard2: 0,
                 isRunning: false,
                 lastUpdateTimestamp: null,
             };
 
             function saveData() {
-                localStorage.setItem("scoreboardData", JSON.stringify(data));
+                update(dataRef, data)
+                    .then(() => {
+                        console.log("Data saved to Firebase!");
+                    })
+                    .catch((err) => {
+                        console.error("Failed to save data:", err);
+                    });
             }
 
             const team1Input = document.getElementById("team1");
@@ -197,10 +213,6 @@
             }
 
             function updateStopwatchUI() {
-                console.log(
-                    "Updating stopwatch UI",
-                    formatTime(calculateElapsed())
-                );
                 timerInput.value = formatTime(calculateElapsed());
             }
 
@@ -315,12 +327,10 @@
 
             updateFormFromData();
 
-            window.addEventListener("storage", (event) => {
-                if (event.key === "scoreboardData") {
-                    data = JSON.parse(event.newValue) || data;
-                    console.log("Data updated from another tab:", data);
-                    updateFormFromData();
-                }
+            onValue(dataRef, (snapshot) => {
+                data = snapshot.val() || data;
+                console.log("Data updated from Firebase:", data);
+                updateFormFromData(); // your function to update the form/UI
             });
         </script>
     </body>
