@@ -1,0 +1,137 @@
+.scoreboard {
+    min-width: 660px;
+    margin: 0 auto;
+    padding-top: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-weight: 700;
+}
+.scoreboard__title{
+    min-width: 24rem;
+    max-width: 100%;
+    padding: .3rem 0 .3rem;
+    color: white;
+    text-align: center;
+    vertical-align: middle;
+    background-color: #006eb9;
+    border: solid #059;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+}
+
+.scoreboard__title img {
+    display: inline-block;
+    max-height: 30px;
+    vertical-align: bottom;
+}
+
+.scoreboard__main {
+    width: auto;
+    min-width: 660px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    background-color: #fff;
+    border: 2px solid #e8e5e5;
+    box-shadow: 0 5px 10px 2px #223c5033 inset;
+    height: 3.5rem;
+    border-radius: 2.6rem;
+    font-size: 1.6rem;
+}
+
+.scoreboard__team {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 150px;
+    position: relative;
+}
+
+#team-1, #team-2 {
+    flex: 1 1 auto;
+    min-width: 0;
+    white-space: nowrap;
+    text-align: center;
+}
+
+
+.scoreboard__card__container {
+    position: absolute;
+    bottom: 0;
+    left: 30%;
+    width: 75%;
+    height: 19%;
+    overflow: hidden;
+}
+
+.scoreboard_card {
+    display: inline-block;
+    width: 10%;
+    border-radius: 3px 3px 0 0;
+    margin-right: 3px;
+}
+
+.red-card {
+    background-color: red;
+}
+
+.yellow-card {
+    background-color: yellow;
+}
+
+.scoreboard__score {
+    display: flex;
+    z-index: 2;
+    padding: 0 2px;
+    margin: -.5rem 8px 0;
+}
+
+.scoreboard__score--left {
+    background-color: #555;
+    width: 4rem;
+    height: 3.5rem;
+    line-height: 1.5;
+    font-size: 2.4rem;
+    border-radius: 2.4rem 0 0 2.4rem;
+    color: #fff;
+    text-align: center;
+}
+
+.scoreboard__score--right {
+    background-color: #555;
+    width: 4rem;
+    height: 3.5rem;
+    line-height: 1.5;
+    font-size: 2.4rem;
+    border-radius: 0 2.4rem 2.4rem 0;
+    color: #fff;
+    text-align: center;
+}
+
+.scoreboard__score--timer {
+    font-size: 2.4rem;
+    color: #006eb9;
+    background-color: #fff;
+    height: 3.5rem;
+    line-height: 1.5;
+    text-align: center;
+    border: solid #c7c6c6;
+    border-width: 0 6px 0 6px;
+    box-shadow: 0 5px 10px 2px #223c5033 inset;
+}
+
+.scoreboard__period {
+    position: relative;
+    z-index: 2;
+    min-width: 14rem;
+    margin: 0 auto;
+    text-align: center;
+    color: #fff;
+    font-size: 1.8rem;
+    line-height: 1.1;
+    border-width: 0 0 4px 4px;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+    background-color: #555;
+    padding: 0.3rem
+}

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Admin Stopwatch</title>
+        <link rel="stylesheet" href="main.css" />
+        <style>
+            .admin-form {
+                min-width: 500px;
+                margin: 0 auto;
+                padding: 20px;
+                background-color: #fff;
+                border: 2px solid #e8e5e5;
+                border-radius: 2.6rem;
+                box-shadow: 0 5px 10px 2px #223c5033 inset;
+                font-weight: 700;
+                font-size: 1.6rem;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            .admin-form h3 {
+                color: #006eb9;
+                margin: 15px 0 5px;
+                width: 100%;
+                text-align: left;
+                padding-left: 10%;
+            }
+            .admin-form .team-group,
+            .admin-form .timer-group {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                width: 80%;
+                margin: 10px 0;
+            }
+
+            .admin-form .team-group input,
+            .admin-form .timer-group input {
+                flex: 1;
+                padding: 8px;
+                border: 1px solid #c7c6c6;
+                border-radius: 5px;
+                font-size: 1.4rem;
+                margin-right: 10px;
+            }
+            .admin-form .timer-controls,
+            .admin-form button {
+                display: flex;
+                width: 80%;
+                margin: 10px 0;
+            }
+            .admin-form button {
+                padding: 8px 15px;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 1.4rem;
+                margin: 0 5px;
+            }
+            .admin-form button#startBtn {
+                background-color: #28a745;
+            }
+            .admin-form button#startBtn:hover {
+                background-color: #218838;
+            }
+            .admin-form button#pauseBtn {
+                background-color: #ffc107;
+            }
+            .admin-form button#pauseBtn:hover {
+                background-color: #e0a800;
+            }
+            .admin-form button#resetBtn {
+                background-color: #dc3545;
+            }
+            .admin-form button#resetBtn:hover {
+                background-color: #c82333;
+            }
+            .admin-form label {
+                margin: 10px 0 5px;
+                color: #006eb9;
+            }
+            .admin-form select {
+                width: 80%;
+                padding: 8px;
+                border: 1px solid #c7c6c6;
+                border-radius: 5px;
+                font-size: 1.4rem;
+            }
+            .admin-form button#updateBtn {
+                margin-top: 20px;
+                padding: 10px 20px;
+                background-color: #006eb9;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 1.6rem;
+            }
+            .admin-form button#updateBtn:hover {
+                background-color: #005a9e;
+            }
+            .team-group input {
+                max-width: 200px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="scoreboard">
+            <header class="scoreboard__title">
+                <img src="./image/download" alt="" />
+            </header>
+        </div>
+        <div class="admin-form">
+            <h3>Teams</h3>
+            <div class="team-group">
+                <label for="team1">Team 1:</label>
+                <input type="text" id="team1" value="" />
+                <label for="score1">Score:</label>
+                <input type="number" id="score1" value="0" min="0" />
+                <label for="yellowCard1">Yellow Cards:</label>
+                <input type="number" id="yellowCard1" value="0" min="0" />
+                <label for="redCard1">Red Cards:</label>
+                <input type="number" id="redCard1" value="0" min="0" />
+            </div>
+            <div class="team-group">
+                <label for="team2">Team 2:</label>
+                <input type="text" id="team2" value="" />
+                <label for="score2">Score:</label>
+                <input type="number" id="score2" value="0" min="0" />
+                <label for="yellowCard2">Yellow Cards:</label>
+                <input type="number" id="yellowCard2" value="0" min="0" />
+                <label for="redCard2">Red Cards:</label>
+                <input type="number" id="redCard2" value="0" min="0" />
+            </div>
+            <h3>Stopwatch (MM:SS)</h3>
+            <div class="timer-group">
+                <input type="text" id="timer" value="00:00" readonly />
+            </div>
+            <div class="timer-controls">
+                <button id="startBtn">Start</button>
+                <button id="pauseBtn">Pause</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+            <h3>Period</h3>
+            <select id="period">
+                <option value="1st" selected>1st</option>
+                <option value="2nd">2nd</option>
+            </select>
+            <button id="updateBtn">Update Scoreboard (Manual)</button>
+        </div>
+
+        <script>
+            let stopwatchInterval = null;
+            let data = JSON.parse(localStorage.getItem("scoreboardData")) || {
+                team1: "",
+                team2: "",
+                score1: 0,
+                score2: 0,
+                period: "",
+                elapsedMillis: 0,
+                isRunning: false,
+                lastUpdateTimestamp: null,
+            };
+
+            function saveData() {
+                localStorage.setItem("scoreboardData", JSON.stringify(data));
+            }
+
+            const team1Input = document.getElementById("team1");
+            const team2Input = document.getElementById("team2");
+            const score1Input = document.getElementById("score1");
+            const score2Input = document.getElementById("score2");
+            const redCard1Input = document.getElementById("redCard1");
+            const redCard2Input = document.getElementById("redCard2");
+            const yellowCard1Input = document.getElementById("yellowCard1");
+            const yellowCard2Input = document.getElementById("yellowCard2");
+            const timerInput = document.getElementById("timer");
+            const periodSelect = document.getElementById("period");
+
+            function formatTime(millis) {
+                const totalSeconds = Math.floor(millis / 1000);
+                const minutes = Math.floor(totalSeconds / 60)
+                    .toString()
+                    .padStart(2, "0");
+                const seconds = (totalSeconds % 60).toString().padStart(2, "0");
+                return `${minutes}:${seconds}`;
+            }
+
+            function calculateElapsed() {
+                if (!data.isRunning) return data.elapsedMillis;
+                return (
+                    data.elapsedMillis + (Date.now() - data.lastUpdateTimestamp)
+                );
+            }
+
+            function updateStopwatchUI() {
+                console.log(
+                    "Updating stopwatch UI",
+                    formatTime(calculateElapsed())
+                );
+                timerInput.value = formatTime(calculateElapsed());
+            }
+
+            function updateFormFromData() {
+                team1Input.value = data.team1;
+                team2Input.value = data.team2;
+                score1Input.value = data.score1;
+                score2Input.value = data.score2;
+                periodSelect.value = data.period;
+                yellowCard1Input.value = data.yellowCard1;
+                yellowCard2Input.value = data.yellowCard2;
+                redCard1Input.value = data.redCard1;
+                redCard2Input.value = data.redCard2;
+                updateStopwatchUI();
+
+                clearInterval(stopwatchInterval);
+                stopwatchInterval = null;
+
+                if (data.isRunning) {
+                    stopwatchInterval = setInterval(updateStopwatchUI, 1000);
+                }
+            }
+
+            team1Input.addEventListener("input", (e) => {
+                data.team1 = e.target.value;
+                saveData();
+            });
+            team2Input.addEventListener("input", (e) => {
+                data.team2 = e.target.value;
+                saveData();
+            });
+            score1Input.addEventListener("input", (e) => {
+                data.score1 = parseInt(e.target.value) || 0;
+                saveData();
+            });
+            score2Input.addEventListener("input", (e) => {
+                data.score2 = parseInt(e.target.value) || 0;
+                saveData();
+            });
+            yellowCard1Input.addEventListener("input", (e) => {
+                data.yellowCard1 = parseInt(e.target.value) || 0;
+                saveData();
+            });
+            yellowCard2Input.addEventListener("input", (e) => {
+                data.yellowCard2 = parseInt(e.target.value) || 0;
+                saveData();
+            });
+            redCard1Input.addEventListener("input", (e) => {
+                data.redCard1 = parseInt(e.target.value) || 0;
+                saveData();
+            });
+            redCard2Input.addEventListener("input", (e) => {
+                data.redCard2 = parseInt(e.target.value) || 0;
+                saveData();
+            });
+            periodSelect.addEventListener("change", (e) => {
+                data.period = e.target.value;
+                saveData();
+            });
+
+            document
+                .getElementById("startBtn")
+                .addEventListener("click", () => {
+                    if (!data.isRunning) {
+                        data.isRunning = true;
+                        data.lastUpdateTimestamp = Date.now();
+                        saveData();
+                        if (!stopwatchInterval) {
+                            stopwatchInterval = setInterval(
+                                updateStopwatchUI,
+                                1000
+                            );
+                            alert("Stopwatch started!");
+                        }
+                    }
+                });
+
+            document
+                .getElementById("pauseBtn")
+                .addEventListener("click", () => {
+                    if (data.isRunning) {
+                        data.elapsedMillis = calculateElapsed();
+                        data.isRunning = false;
+                        data.lastUpdateTimestamp = null;
+                        clearInterval(stopwatchInterval);
+                        stopwatchInterval = null;
+                        saveData();
+                        alert("Stopwatch paused!");
+                    }
+                });
+
+            document
+                .getElementById("resetBtn")
+                .addEventListener("click", () => {
+                    data.elapsedMillis = 0;
+                    data.isRunning = false;
+                    data.lastUpdateTimestamp = null;
+                    clearInterval(stopwatchInterval);
+                    stopwatchInterval = null;
+                    timerInput.value = formatTime(data.elapsedMillis);
+                    saveData();
+                });
+
+            document
+                .getElementById("updateBtn")
+                .addEventListener("click", () => {
+                    saveData();
+                    alert(
+                        "Updates saved manually! Scoreboard in other tabs will refresh automatically."
+                    );
+                });
+
+            updateFormFromData();
+
+            window.addEventListener("storage", (event) => {
+                if (event.key === "scoreboardData") {
+                    data = JSON.parse(event.newValue) || data;
+                    console.log("Data updated from another tab:", data);
+                    updateFormFromData();
+                }
+            });
+        </script>
+    </body>
+</html>
